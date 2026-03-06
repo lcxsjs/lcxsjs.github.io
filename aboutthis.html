@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于这个项目</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            padding: 40px;
+            margin-top: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            font-weight: 300;
+        }
+        
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 24px;
+            text-align: justify;
+        }
+        
+        .highlight {
+            color: #e74c3c;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 15px 0;
+            padding: 8px 0;
+        }
+        
+        .note {
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+            padding: 15px 20px;
+            margin: 30px 0;
+            font-style: italic;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #95a5a6;
+            font-size: 0.9rem;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            p {
+                font-size: 1rem;
+            }
+            
+            .highlight {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>关于这个项目</h1>
+            <div class="subtitle">李宸熙制作，仅供娱乐</div>
+        </header>
+        
+        <main class="content">
+            <p>首先非常感谢您访问我的网站，我会努力做得更好。</p>
+            
+            <p>如有bug有意者亲联系我 li13564148078@outlook.com / lichenxi8078@outlook.com</p>
+            
+            <div class="highlight">使用技术：• HTML5 + CSS3 + JavaScript• Supabase云端数据库• 响应式设计• 原生浏览器API</div>
+            
+            
+            <div class="highlight">请勿用于商业用途</div>
+            
+            
+            <p>点击下方查看免责协议</p>
+        </main>
+<a href='https://lcxsjs.github.io/mzxy.html'>关于此项目的免责协议</a>
+        
+        <footer class="footer">
+            <p>dragon xi tech lcx 2026</p>
+        </footer>
+    </div>
+    
+    <script>
+        // 简单的交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            const highlights = document.querySelectorAll('.highlight');
+            
+            highlights.forEach(highlight => {
+                highlight.addEventListener('mouseenter', function() {
+                    this.style.transition = 'all 0.3s ease';
+                    this.style.backgroundColor = '#fff5f5';
+                    this.style.paddingLeft = '10px';
+                });
+                
+                highlight.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = '';
+                    this.style.paddingLeft = '';
+                });
+            });
+            
+            // 页面加载时的淡入效果
+            document.querySelector('.container').style.opacity = '0';
+            document.querySelector('.container').style.transition = 'opacity 0.8s ease';
+            
+            setTimeout(() => {
+                document.querySelector('.container').style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
