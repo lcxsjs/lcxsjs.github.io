@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台控制 MADE by lcx</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+        
+        /* 密码验证界面 */
+        .password-screen {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .password-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .password-title {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .password-input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .login-error {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        /* 后台主界面 */
+        .admin-content {
+            width: 100%;
+            display: none;
+        }
+        
+        /* 顶部蓝色导航条 - 与主程序保持一致 */
+        .top-bar {
+            width: 100%;
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .back-link {
+            background: linear-gradient(to right, #2980b9, #1f639e);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 3px solid #1c5275;
+            transition: all 0.3s;
+        }
+        
+        .back-link:hover {
+            background: linear-gradient(to right, #1f639e, #2980b9);
+            transform: translateY(-2px);
+        }
+        
+        /* 主要内容区域 */
+        .content {
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 80px;
+            padding: 2rem 1rem;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .section-desc {
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        /* 概率控制区域 */
+        .probability-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .probability-item {
+            background: #f8f9fa;
+            padding: 1.2rem;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .number-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+        }
+        
+        .number-label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.2rem;
+        }
+        
+        .probability-value {
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #e0e0e0;
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* 禁用数字区域 */
+        .disabled-numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin: 1.5rem 0 2.5rem 0;
+        }
+        
+        .number-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid #ddd;
+            transition: all 0.2s;
+            font-size: 1.1rem;
+        }
+        
+        .number-btn.enabled {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        
+        .number-btn.disabled {
+            background: #95a5a6;
+            color: #ecf0f1;
+            text-decoration: line-through;
+            border-color: #7f8c8d;
+        }
+        
+        /* 控制按钮区域 */
+        .control-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2.5rem 0;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .control-btn {
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .save-btn {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .save-btn:hover {
+            background: linear-gradient(to right, #27ae60, #219653);
+        }
+        
+        .default-btn {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .default-btn:hover {
+            background: linear-gradient(to right, #2980b9, #1f639e);
+        }
+        
+        .reset-btn {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            background: linear-gradient(to right, #c0392b, #a93226);
+        }
+        
+        /* 状态消息 */
+        .status-msg {
+            text-align: center;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading-msg {
+            text-align: center;
+            padding: 2rem;
+            color: #7f8c8d;
+        }
+        
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+            color: #95a5a6;
+            font-size: 0.9rem;
+            padding: 1rem;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .password-container {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            .top-bar {
+                padding: 0.8rem 1rem;
+            }
+            
+            .logo, .back-link {
+                font-size: 1rem;
+            }
+            
+            .content {
+                margin-top: 70px;
+                padding: 1rem;
+            }
+            
+            .probability-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-buttons {
+                flex-direction: column;
+            }
+            
+            .number-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .section-title {
+                font-size: 1.5rem;
+            }
+            
+            .probability-item {
+                padding: 1rem;
+            }
+            
+            .control-btn {
+                padding: 0.8rem 1rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 密码验证界面 -->
+    <div class="password-screen" id="passwordScreen">
+        <div class="password-container">
+            <h2 class="password-title">后台管理系统</h2>
+            <input type="password" id="passwordInput" class="password-input" placeholder="请输入管理密码" autocomplete="off">
+            <button id="loginBtn" class="login-btn">登录</button>
+            <div id="loginError" class="login-error">密码错误，请重试</div>
+        </div>
+    </div>
+    
+    <!-- 后台主界面 -->
+    <div class="admin-content" id="adminContent">
+        <!-- 顶部蓝色导航条 -->
+        <div class="top-bar">
+            <div class="logo">随机数生成器 - 后台控制 all made by 李宸熙</div>
+            <a href="index.html" class="back-link">返回主程序</a>
+        </div>
+        
+        <!-- 主要内容区域 -->
+        <div class="content">
+            <h1 class="section-title">概率控制设置</h1>
+            <p class="section-desc">调整1-15号数字的出现概率。数值越高，该数字被选中的几率越大。范围：0.0 - 2.0（对应0% - 100%）</p>
+            
+            <div id="loadingMessage" class="loading-msg" style="display: none;">
+                正在从云端加载设置...
+            </div>
+            
+            <div class="probability-grid" id="probabilityControls">
+                <!-- 概率控制滑块将通过JS动态生成 -->
+            </div>
+            
+            <h2 class="section-title">禁用数字设置</h2>
+            <p class="section-desc">点击数字以启用/禁用。灰色数字将永远不会在随机生成中出现。</p>
+            
+            <div class="disabled-numbers" id="disabledNumbers">
+                <!-- 数字切换按钮将通过JS动态生成 -->
+            </div>
+            
+            <div class="control-buttons">
+                <button class="control-btn save-btn" id="saveBtn">保存到云端</button>
+                <button class="control-btn default-btn" id="defaultBtn">恢复默认</button>
+                <button class="control-btn reset-btn" id="resetBtn">重置所有</button>
+            </div>
+            
+            <div class="status-msg" id="statusMessage"></div>
+        </div>
+        
+        <footer>
+            <p>©️dragon xi tech的李宸熙保留所有权益</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Supabase配置 - 必须与主程序一致
+        const SUPABASE_URL = "https://rdzsdpgbcgcsrjgaejny.supabase.co";  // 替换为您的URL
+        const SUPABASE_KEY = "sb_publishable_jeQQ10qvflNRSXfHXSRrXA_mCcDZ21T";  // 替换为您的key
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // 管理密码
+        const ADMIN_PASSWORD = "3333";  // 您设置的密码
+        
+        // 全局变量
+        let probabilities = {};
+        let disabledNumbers = [];
+        
+        // 密码验证
+        function checkPassword() {
+            const inputPassword = document.getElementById('passwordInput').value;
+            
+            if (inputPassword === ADMIN_PASSWORD) {
+                // 密码正确，显示后台界面
+                document.getElementById('passwordScreen').style.display = 'none';
+                document.getElementById('adminContent').style.display = 'block';
+                
+                // 初始化后台
+                initializeAdmin();
+                
+                return true;
+            } else {
+                // 密码错误
+                document.getElementById('loginError').style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+                return false;
+            }
+        }
+        
+        // 从Supabase云端加载设置
+        async function loadSettingsFromCloud() {
+            try {
+                document.getElementById('loadingMessage').style.display = 'block';
+                console.log("正在从云端加载设置...");
+                
+                const { data, error } = await supabaseClient
+                    .from('generator_settings')
+                    .select('*')
+                    .eq('user_id', 'public_user')
+                    .order('last_modified', { ascending: false })
+                    .limit(1)
+                    .single();
+                
+                if (error) {
+                    console.error("从云端加载设置失败:", error);
+                    throw new Error("无法从云端加载设置");
+                }
+                
+                if (data) {
+                    probabilities = data.probabilities || {};
+                    disabledNumbers = data.disabled_numbers || [];
+                    
+                    console.log("云端设置加载成功:", { probabilities, disabledNumbers });
+                    return true;
+                } else {
+                    // 云端没有数据，使用默认值
+                    console.log("云端没有设置数据，初始化默认值");
+                    initializeDefaultSettings();
+                    return true;
+                }
+                
+            } catch (e) {
+                console.error("加载设置时出错:", e);
+                return false;
+            } finally {
+                document.getElementById('loadingMessage').style.display = 'none';
+            }
+        }
+        
+        // 初始化默认设置
+        function initializeDefaultSettings() {
+            probabilities = {};
+            for (let i = 1; i <= 15; i++) {
+                probabilities[i] = 1.0;
+            }
+            disabledNumbers = [];
+        }
+        
+        // 保存设置到Supabase云端
+        async function saveSettingsToCloud() {
+            try {
+                const settings = {
+                    probabilities: probabilities,
+                    disabled_numbers: disabledNumbers,
+                    last_modified: new Date().toISOString()
+                };
+                
+                console.log("保存设置到云端:", settings);
+                
+                const { error } = await supabaseClient
+                    .from('generator_settings')
+                    .upsert({
+                        user_id: 'public_user',
+                        probabilities: probabilities,
+                        disabled_numbers: disabledNumbers,
+                        last_modified: new Date().toISOString()
+                    }, {
+                        onConflict: 'user_id'
+                    });
+                
+                if (error) {
+                    console.error("保存到云端失败:", error);
+                    return false;
+                }
+                
+                console.log("设置已成功保存到云端");
+                return true;
+                
+            } catch (e) {
+                console.error("保存设置时出错:", e);
+                return false;
+            }
+        }
+        
+        // 创建概率控制滑块
+        function createProbabilityControls() {
+            const container = document.getElementById('probabilityControls');
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= 15; i++) {
+                const probability = probabilities[i] || 1.0;
+                const percentage = (probability * 50).toFixed(0);
+                
+                const item = document.createElement('div');
+                item.className = 'probability-item';
+                item.innerHTML = `
+                    <div class="number-header">
+                        <span class="number-label">数字 ${i}</span>
+                        <span class="probability-value" id="value${i}">${percentage}%</span>
+                    </div>
+                    <input type="range" min="0" max="2" step="0.1" value="${probability}" 
+                           class="slider" id="slider${i}" data-number="${i}">
+                `;
+                
+                container.appendChild(item);
+                
+                // 添加滑块事件监听
+                const slider = document.getElementById(`slider${i}`);
+                const valueDisplay = document.getElementById(`value${i}`);
+                
+                slider.addEventListener('input', function() {
+                    const num = parseInt(this.dataset.number);
+                    const value = parseFloat(this.value);
+                    const percentage = (value * 50).toFixed(0);
+                    
+                    probabilities[num] = value;
+                    valueDisplay.textContent = `${percentage}%`;
+                });
+            }
+        }
+        
+        // 创建禁用数字切换按钮
+        function createDisabledNumberToggles() {
+            const container = document.getElementById('disabledNumbers');
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= 32; i++) {
+                const isDisabled = disabledNumbers.includes(i);
+                
+                const toggle = document.createElement('div');
+                toggle.className = `number-btn ${isDisabled ? 'disabled' : 'enabled'}`;
+                toggle.textContent = i;
+                toggle.dataset.number = i;
+                
+                toggle.addEventListener('click', function() {
+                    const num = parseInt(this.dataset.number);
+                    toggleNumber(num);
+                });
+                
+                container.appendChild(toggle);
+            }
+        }
+        
+        // 切换数字的启用/禁用状态
+        function toggleNumber(number) {
+            const index = disabledNumbers.indexOf(number);
+            
+            if (index === -1) {
+                // 添加到禁用列表
+                disabledNumbers.push(number);
+            } else {
+                // 从禁用列表中移除
+                disabledNumbers.splice(index, 1);
+            }
+            
+            // 重新渲染禁用数字切换按钮
+            createDisabledNumberToggles();
+            
+            // 显示状态消息
+            showStatus(`数字 ${number} 已${index === -1 ? '禁用' : '启用'}`, 'success');
+        }
+        
+        // 显示状态消息
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-msg status-${type}`;
+            statusEl.style.display = 'block';
+            
+            // 3秒后隐藏消息
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 保存设置到云端
+        async function saveAllSettings() {
+            const saved = await saveSettingsToCloud();
+            
+            if (saved) {
+                showStatus('设置已成功保存到云端！', 'success');
+            } else {
+                showStatus('保存到云端失败，请重试。', 'error');
+            }
+        }
+        
+        // 恢复默认设置
+        async function restoreDefaultSettings() {
+            if (confirm('确定要恢复默认设置吗？这将重置所有概率为1.0并清空禁用数字。')) {
+                // 重置概率
+                probabilities = {};
+                for (let i = 1; i <= 15; i++) {
+                    probabilities[i] = 1.0;
+                }
+                
+                // 重置禁用数字
+                disabledNumbers = [];
+                
+                // 重新渲染界面
+                createProbabilityControls();
+                createDisabledNumberToggles();
+                
+                // 保存到云端
+                await saveSettingsToCloud();
+                
+                showStatus('已恢复默认设置并保存到云端', 'success');
+            }
+        }
+        
+        // 重置所有设置
+        async function resetAllSettings() {
+            if (confirm('确定要重置所有设置吗？这将清除云端和本地的所有自定义设置。')) {
+                // 重置为默认值
+                initializeDefaultSettings();
+                
+                // 保存到云端
+                await saveSettingsToCloud();
+                
+                // 重新渲染界面
+                createProbabilityControls();
+                createDisabledNumberToggles();
+                
+                showStatus('所有设置已重置并更新到云端', 'success');
+            }
+        }
+        
+        // 初始化后台
+        async function initializeAdmin() {
+            try {
+                // 显示加载信息
+                document.getElementById('loadingMessage').style.display = 'block';
+                
+                // 从云端加载设置
+                const loaded = await loadSettingsFromCloud();
+                
+                if (loaded) {
+                    // 创建控制界面
+                    createProbabilityControls();
+                    createDisabledNumberToggles();
+                    
+                    // 绑定按钮事件
+                    document.getElementById('saveBtn').addEventListener('click', saveAllSettings);
+                    document.getElementById('defaultBtn').addEventListener('click', restoreDefaultSettings);
+                    document.getElementById('resetBtn').addEventListener('click', resetAllSettings);
+                    
+                    console.log("后台初始化完成");
+                } else {
+                    showStatus('无法从云端加载设置，请检查网络连接', 'error');
+                }
+            } catch (e) {
+                console.error("后台初始化失败:", e);
+                showStatus('后台初始化失败，请刷新页面重试', 'error');
+            } finally {
+                document.getElementById('loadingMessage').style.display = 'none';
+            }
+        }
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 绑定登录按钮事件
+            document.getElementById('loginBtn').addEventListener('click', checkPassword);
+            
+            // 回车键登录
+            document.getElementById('passwordInput').addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    checkPassword();
+                }
+            });
+            
+            // 自动聚焦到密码输入框
+            document.getElementById('passwordInput').focus();
+        });
+    </script>
+</body>
+</html>
